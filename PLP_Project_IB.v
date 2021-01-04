@@ -116,71 +116,85 @@ Inductive Stmt :=
 | continue : Stmt 
 | switch : AExp -> Stmt -> Stmt (* int -> sequence -> Stmt *)
 | ifthenelse : BExp -> Stmt -> Stmt -> Stmt
-| fordo : BExp -> Stmt -> Stmt -> Stmt
+| fordo : Stmt ->BExp -> Stmt -> Stmt -> Stmt
 | adecnull : string -> Stmt
 | adec : string -> AExp -> Stmt.
 
 
 Notation "A ::= B" := (assignment A B) (at level 87).
 Notation "S1 ;; S2" := (sequence S1 S2) (at level 90).
-Notation "'While' A '(' B ')'" := (while A (B)) (at level 98).
+Notation "'While' '(' A ')' '(' B ')'" := (while A B) (at level 98).
 Notation "If; A Then; B Else; C" := (ifthenelse A B C) (at level 97).
 Notation "{ A , B }" := (pair A B) (at level 30).
 Notation "'If' A 'Then' B 'Else' C" := (ifthenelse A B C) (at level 90).
 Notation "'For' '(' A ; B ; C ')' '(' D ')'" := (fordo A B C D) (at level 90).
-Notation "'switch' A 'case' B 'case' C" := (switch A B C) (at level 90).
-Notation "'break;'":= (break) (at level 40).
+Notation "'switch' A 'case'':' B" := (switch A B) (at level 90).
+Notation "'break'":= (break) (at level 40).
 Notation "'continue'" := (continue) (at level 45).
 Notation "'declare*' A" := (adecnull A) (at level 50).
+Notation "'decl' A =' B" := (adec A B) (at level 50).
  
+Check break.
+Check continue.
+Check (declare* "n").
+Check (decl "n" =' 4).
 
- Check (switch_stmt (2){
-        ncase: 1 -->
-         "n1" :n= 1
-        Break!
-        ;;
-        ncase: 2 -->
-         "n1" :n= 2
-        Break!
-        ;;
-        ncase: 3 -->
-          "n1" :n= 3;;
-          "n2" :n= 5
-        Break! 
-}). 
 
 
 Definition break_stmt := 
-     int "n" ==' 0 ;;
-     int "numar" ==' 5
-     int "x" ==' 0 ;;
+     decl "n" =' 0 ;;
+     decl "numar" =' 5 ;;
+     decl "x" =' 0 ;;
      While ("n" <' 12)
          (
-           "x" ::= "x" +' "n" ;;
-           "n" ::= "n" + "numar" ;;
-           break;
+           "x" ::= ("x" +' "n") ;;
+           "n" ::= ("n" +' "numar") ;;
+           break
          ).
 
 Check break_stmt.
 
- 
-Check switch_stmt.
-
 Definition continue_stmt :=
-   int "i" =' 0;;
-   For( "i" ::= 0 ; "i" <' 7 ; "i" ::= "i" +' 1)
+   decl "i" =' 0;;
+   For( "i" ::= 0 ; "i" <' 7 ; "i" ::= ("i" +' 1))
    (
 If ( "i" ==' 3)
     Then "x" ::= 1
 Else
     "x" ::= 0
 );;
-continue;
-.
+continue.
 
 Check continue_stmt.
 
 
+
+Definition switch_stmt :=
+  declare* "n" ==' 0;;
+ (switch_stmt (2)
+        case:
+         "n1" :n= 1
+        break
+        ;;
+        case:
+         "n1" :n= 2
+        break
+        ;;
+        case: 
+          "n1" :n= 3;;
+          "n2" :n= 5;;
+        break 
+). 
+
+Check switch_stmt.
+
+
+
+
+
+
+
+ 
 
 
  
