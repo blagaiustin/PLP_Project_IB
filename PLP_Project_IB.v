@@ -42,14 +42,17 @@ Compute Envtest2 "x".
 
 Inductive AExp :=
 | aplus : AExp -> AExp -> AExp
-| amin: AExp -> AExp -> AExp
-| amax: AExp -> AExp -> AExp
-| apow: AExp -> AExp -> AExp
 | aint : nat -> AExp
 | avar : string -> AExp
 | amul : AExp -> AExp -> AExp
 | adiv : AExp -> AExp -> AExp
 | amod : AExp -> AExp -> AExp.
+
+Inductive FnctieAExp :=
+| amin: AExp -> AExp -> FnctieAExp
+| amax: AExp -> AExp -> FnctieAExp
+| apow: AExp -> AExp -> FnctieAExp.
+
 
 Inductive BExp :=
 | bequal : AExp -> AExp -> BExp
@@ -60,13 +63,15 @@ Inductive BExp :=
 | blessthan : AExp -> AExp -> BExp
 | bmorethan : AExp -> AExp -> BExp.
 
-
 Coercion aint : nat >-> AExp.
 Coercion avar : string >-> AExp.
 
 Inductive Vector :=
 | vector_decl : string -> AExp -> Vector
 | vector_assing : string -> AExp -> Vector.
+
+
+Reserved Notation "B ={ S }=> B'" (at level 70).
 
 Notation " A ==' B" := (bequal A B) (at level 30).
 Notation "A <' B" := (blessthan A B) (at level 70).
@@ -111,7 +116,10 @@ Inductive Stmt :=
 | continue : Stmt 
 | switch : AExp -> Stmt -> Stmt (* int -> sequence -> Stmt *)
 | ifthenelse : BExp -> Stmt -> Stmt -> Stmt
-| fordo : BExp -> Stmt -> Stmt -> Stmt.
+| fordo : BExp -> Stmt -> Stmt -> Stmt
+| adecnull : string -> Stmt
+| adec : string -> AExp -> Stmt.
+
 
 Notation "A ::= B" := (assignment A B) (at level 87).
 Notation "S1 ;; S2" := (sequence S1 S2) (at level 90).
@@ -121,8 +129,56 @@ Notation "{ A , B }" := (pair A B) (at level 30).
 Notation "'If' A 'Then' B 'Else' C" := (ifthenelse A B C) (at level 90).
 Notation "'For' '(' A ; B ; C ')' '(' D ')'" := (fordo A B C D) (at level 90).
 Notation "'switch' A 'case' B 'case' C" := (switch A B C) (at level 90).
-Notation "'break'":= (break) (at level 40).
+Notation "'break;'":= (break) (at level 40).
 Notation "'continue'" := (continue) (at level 45).
+Notation "'declare*' A" := (adecnull A) (at level 50).
+ 
+
+ Check (switch_stmt (2){
+        ncase: 1 -->
+         "n1" :n= 1
+        Break!
+        ;;
+        ncase: 2 -->
+         "n1" :n= 2
+        Break!
+        ;;
+        ncase: 3 -->
+          "n1" :n= 3;;
+          "n2" :n= 5
+        Break! 
+}). 
+
+
+Definition break_stmt := 
+     int "n" ==' 0 ;;
+     int "numar" ==' 5
+     int "x" ==' 0 ;;
+     While ("n" <' 12)
+         (
+           "x" ::= "x" +' "n" ;;
+           "n" ::= "n" + "numar" ;;
+           break;
+         ).
+
+Check break_stmt.
+
+ 
+Check switch_stmt.
+
+Definition continue_stmt :=
+   int "i" =' 0;;
+   For( "i" ::= 0 ; "i" <' 7 ; "i" ::= "i" +' 1)
+   (
+If ( "i" ==' 3)
+    Then "x" ::= 1
+Else
+    "x" ::= 0
+);;
+continue;
+.
+
+Check continue_stmt.
 
 
 
