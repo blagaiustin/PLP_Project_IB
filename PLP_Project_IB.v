@@ -54,7 +54,7 @@ Coercion boolean: bool >-> ErrorBool.
 
 Inductive AExp :=
 | aplus : AExp -> AExp -> AExp
-| aint : nat -> AExp
+| aint : ErrorNat -> AExp
 | avar : string -> AExp
 | amul : AExp -> AExp -> AExp
 | adiv : AExp -> AExp -> AExp
@@ -76,12 +76,12 @@ Inductive BExp :=
 | bmorethan : AExp -> AExp -> BExp.
 
 
-Coercion aint : nat >-> AExp.
+Coercion aint : ErrorNat >-> AExp.
 Coercion avar : string >-> AExp.
 
 Inductive Vector :=
 | vector_decl : string -> AExp -> Vector
-| vector_assing : string -> AExp -> Vector.
+| vector_assign : string -> AExp -> Vector.
 
 
 Reserved Notation "B ={ S }=> B'" (at level 70).
@@ -145,20 +145,19 @@ Notation "Break!" := (break) (at level 50).
 Notation "Continue!" := (continue) (at level 50).
 Notation "'declare*' A" := (adecnull A) (at level 50).
 Notation "'decl' A =' B" := (adec A B) (at level 50).
-Notation "'maxim' A * B" := (amax A B) (at level 60).
-Notation "'minim' A * B" := (amin A B) (at level 60).
-Notation "'pow' A * B" := (apow A B) (at level 60).
+Notation " A 'MaX' B " := (amax A B) (at level 60).
+Notation "A 'MiN' B" := (amin A B) (at level 60).
+Notation "A 'PoW' B" := (apow A B) (at level 60).
 Notation "'switch' '(' A ')' '(' 'first_case' B 'second_case' C ')'" := (switch A B C)(at level 90).
 
 Check break.
 Check continue.
 Check (declare* "n").
 Check (decl "n" =' 4).
-(* 
-Check maxim 1 ~ 2.
-Check minim 1 ~ 2.
-Check pow 1 ~ 2. 
-*)
+Check 1 MaX 2.
+Check 1 MiN 2.
+Check 1 PoW 2. 
+
 
 Definition break_pgm := 
      decl "n" =' 0 ;;
