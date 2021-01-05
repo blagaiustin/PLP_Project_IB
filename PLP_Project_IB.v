@@ -5,7 +5,8 @@
 Include Nat.
 Require Import Omega.
 Set Nested Proofs Allowed.
-
+Local Open Scope list_scope.
+Open Scope list_scope.
 Require Import Strings.String.
 Local Open Scope string_scope.
 Scheme Equality for string.
@@ -40,6 +41,17 @@ Compute Envfalse "x".
 Compute Envtest "x".
 Compute Envtest2 "x".
 
+Inductive ErrorNat :=
+  | error_nat : ErrorNat
+  | num : nat -> ErrorNat.
+
+Inductive ErrorBool :=
+  | error_bool : ErrorBool
+  | boolean : bool -> ErrorBool.
+
+Coercion num: nat >-> ErrorNat.
+Coercion boolean: bool >-> ErrorBool.
+
 Inductive AExp :=
 | aplus : AExp -> AExp -> AExp
 | aint : nat -> AExp
@@ -62,6 +74,7 @@ Inductive BExp :=
 | band : BExp -> BExp -> BExp
 | blessthan : AExp -> AExp -> BExp
 | bmorethan : AExp -> AExp -> BExp.
+
 
 Coercion aint : nat >-> AExp.
 Coercion avar : string >-> AExp.
@@ -114,10 +127,10 @@ Inductive Stmt :=
 | ifthen : BExp -> Stmt -> Stmt
 | break : Stmt
 | continue : Stmt 
-| switch : AExp -> Stmt -> Stmt (* int -> sequence -> Stmt *)
 | ifthenelse : BExp -> Stmt -> Stmt -> Stmt
 | fordo : Stmt ->BExp -> Stmt -> Stmt -> Stmt
 | adecnull : string -> Stmt
+| switch : BExp -> Stmt -> Stmt -> Stmt
 | adec : string -> AExp -> Stmt.
 
 
@@ -128,20 +141,26 @@ Notation "If; A Then; B Else; C" := (ifthenelse A B C) (at level 97).
 Notation "{ A , B }" := (pair A B) (at level 30).
 Notation "'If' A 'Then' B 'Else' C" := (ifthenelse A B C) (at level 90).
 Notation "'For' '(' A ; B ; C ')' '(' D ')'" := (fordo A B C D) (at level 90).
-Notation "'switch' A 'case'':' B" := (switch A B) (at level 90).
-Notation "'break'":= (break) (at level 40).
-Notation "'continue'" := (continue) (at level 45).
+Notation "Break!" := (break) (at level 50).
+Notation "Continue!" := (continue) (at level 50).
 Notation "'declare*' A" := (adecnull A) (at level 50).
 Notation "'decl' A =' B" := (adec A B) (at level 50).
- 
+Notation "'maxim' A * B" := (amax A B) (at level 60).
+Notation "'minim' A * B" := (amin A B) (at level 60).
+Notation "'pow' A * B" := (apow A B) (at level 60).
+Notation "'switch' '(' A ')' '(' 'first_case' B 'second_case' C ')'" := (switch A B C)(at level 90).
+
 Check break.
 Check continue.
 Check (declare* "n").
 Check (decl "n" =' 4).
+(* 
+Check maxim 1 ~ 2.
+Check minim 1 ~ 2.
+Check pow 1 ~ 2. 
+*)
 
-
-
-Definition break_stmt := 
+Definition break_pgm := 
      decl "n" =' 0 ;;
      decl "numar" =' 5 ;;
      decl "x" =' 0 ;;
@@ -152,9 +171,9 @@ Definition break_stmt :=
            break
          ).
 
-Check break_stmt.
+Check break_pgm.
 
-Definition continue_stmt :=
+Definition continue_pgm :=
    decl "i" =' 0;;
    For( "i" ::= 0 ; "i" <' 7 ; "i" ::= ("i" +' 1))
    (
@@ -165,28 +184,22 @@ Else
 );;
 continue.
 
-Check continue_stmt.
+Check continue_pgm.
 
 
 
-Definition switch_stmt :=
-  declare* "n" ==' 0;;
- (switch_stmt (2)
-        case:
-         "n1" :n= 1
-        break
-        ;;
-        case:
-         "n1" :n= 2
-        break
-        ;;
-        case: 
-          "n1" :n= 3;;
-          "n2" :n= 5;;
-        break 
-). 
-
-Check switch_stmt.
+Definition switch_pgm :=
+    
+    decl "i" =' 0;;
+    decl "n" =' 0 ;;
+   switch ("i" ==' 6) 
+        ( first_case
+           "sum" ::= "i" +' 2 
+        second_case 
+           "sum" ::= "i" +' 1 ;;
+      "i"::="i" +' 1
+     ).
+Check switch_pgm.
 
 
 
